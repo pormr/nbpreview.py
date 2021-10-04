@@ -1,2 +1,2 @@
 # nbpreview.py
-A simple python wrapper of nbpreview
+A simple Python/PyInstaller wrapper for [nbpreview](https://github.com/jsvine/nbpreview).

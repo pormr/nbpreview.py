@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>nbpreview - Jupyter Notebook Previewer</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1">
+        <script src="js/vendor/es5-shim.min.js"></script>
+        <script src="js/vendor/marked.min.js"></script>
+        <script src="js/vendor/purify.min.js"></script>
+        <script src="js/vendor/ansi_up.min.js"></script>
+        <script src="js/vendor/prism.min.js"></script>
+        <script src="js/vendor/katex.min.js"></script>
+        <script src="js/vendor/katex-auto-render.min.js"></script>
+        <script src="js/vendor/notebook.min.js"></script>
+        <link rel="stylesheet" href="css/vendor/katex.min.css" />
+        <link rel="stylesheet" href="css/vendor/prism.css" />
+        <link rel="stylesheet" href="css/notebook.css" />
+        <link rel="stylesheet" href="css/nbpreview.css" />
+    </head>
+    <body>
+	    <div id="main" >
+		<h1 id="title">%s</h1><hr>
+		<div id="notebook-holder"></div>
+		</div>
+	    <div id="data" style="display: none;"><p>%s</p></div>
+        
+        <script>
+			(function () {
+				var root = this;
+				var $title = document.querySelector("#title");
+				var $holder = document.querySelector("#notebook-holder");
+				var data = document.querySelector("#data").innerText;
+
+				var render_notebook = function (ipynb) {
+					var notebook = root.notebook = nb.parse(ipynb);
+					while ($holder.hasChildNodes()) {
+						$holder.removeChild($holder.lastChild);
+					}
+					$holder.appendChild(notebook.render());
+					Prism.highlightAll();
+				};
+				
+				var load_file = function (file) {
+					var reader = new FileReader();
+					reader.onload = function (e) {
+						var parsed = JSON.parse(this.result);
+						render_notebook(parsed);
+					};
+					reader.readAsText(file);
+				};
+
+				window.addEventListener('load', function (e) {
+					e.stopPropagation();
+					e.preventDefault();
+					render_notebook(JSON.parse(window.atob(data)));
+				}, false);
+				
+				window.addEventListener('dragover', function (e) {
+					e.stopPropagation();
+					e.preventDefault();
+					e.dataTransfer.dropEffect = 'copy';
+					root.document.body.style.opacity = 0.5;
+				}, false);
+
+				window.addEventListener('dragleave', function (e) {
+					root.document.body.style.opacity = 1;
+				}, false);
+
+				window.addEventListener('drop', function (e) {
+					e.stopPropagation();
+					e.preventDefault();
+					var file_handle = e.dataTransfer.files[0]
+					load_file(file_handle);
+					$title.innerText = file_handle.name;
+					root.document.body.style.opacity = 1;
+				}, false);
+
+			}).call(this);
+		</script>
+    </body>
+</html>
